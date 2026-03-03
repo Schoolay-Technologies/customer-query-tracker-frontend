@@ -21,6 +21,14 @@ function formatText(text) {
   return v.length ? v : "";
 }
 
+function formatDate(value) {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  // dd/mm/yyyy (India-friendly)
+  return d.toLocaleDateString("en-IN");
+}
+
 export default function TicketList({ tickets, onResolve, onEditRequest }) {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({
@@ -60,6 +68,9 @@ export default function TicketList({ tickets, onResolve, onEditRequest }) {
       <table className="ticketTable">
         <thead>
           <tr>
+            {/* ✅ NEW: Date column */}
+            <th style={{ width: 120 }}>Date</th>
+
             <th style={{ width: 130 }}>Order ID</th>
             <th style={{ width: 140 }}>Mobile</th>
             <th style={{ width: 240 }}>School</th>
@@ -78,6 +89,9 @@ export default function TicketList({ tickets, onResolve, onEditRequest }) {
             if (isEditing) {
               return (
                 <tr key={t._id} className="editRow">
+                  {/* Date is not editable (just shown) */}
+                  <td>{formatDate(t.createdAt)}</td>
+
                   <td>
                     <input
                       className="input tableInput"
@@ -148,6 +162,9 @@ export default function TicketList({ tickets, onResolve, onEditRequest }) {
 
             return (
               <tr key={t._id}>
+                {/* ✅ NEW: Date column */}
+                <td>{formatDate(t.createdAt)}</td>
+
                 <td className="strongCell">{t.orderId}</td>
                 <td>{t.mobile?.trim() ? t.mobile : <span className="mutedCell">—</span>}</td>
                 <td>{t.schoolName}</td>

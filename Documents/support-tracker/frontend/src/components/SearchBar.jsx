@@ -1,7 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { SCHOOLS } from "../data/constants";
 
 export default function SearchBar({ issueTypes, value, onSearch, onClear }) {
   const [local, setLocal] = useState(value);
+
+  useEffect(() => {
+    setLocal(value);
+  }, [value]);
 
   function update(key, val) {
     setLocal((p) => ({ ...p, [key]: val }));
@@ -12,7 +17,15 @@ export default function SearchBar({ issueTypes, value, onSearch, onClear }) {
   }
 
   function clearAll() {
-    const empty = { q: "", orderId: "", mobile: "", issueType: "" };
+    const empty = {
+      q: "",
+      orderId: "",
+      mobile: "",
+      issueType: "",
+      schoolName: "",
+      from: "",
+      to: "",
+    };
     setLocal(empty);
     onClear();
   }
@@ -38,6 +51,31 @@ export default function SearchBar({ issueTypes, value, onSearch, onClear }) {
         <label className="label">
           Mobile (exact)
           <input className="input" value={local.mobile} onChange={(e) => update("mobile", e.target.value)} />
+        </label>
+      </div>
+
+      {/* NEW: School filter */}
+      <label className="label">
+        School
+        <select className="input" value={local.schoolName} onChange={(e) => update("schoolName", e.target.value)}>
+          <option value="">Any</option>
+          {SCHOOLS.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <div className="row2">
+        <label className="label">
+          From Date
+          <input className="input" type="date" value={local.from || ""} onChange={(e) => update("from", e.target.value)} />
+        </label>
+
+        <label className="label">
+          To Date
+          <input className="input" type="date" value={local.to || ""} onChange={(e) => update("to", e.target.value)} />
         </label>
       </div>
 

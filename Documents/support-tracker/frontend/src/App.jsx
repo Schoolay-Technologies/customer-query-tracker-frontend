@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+
 import TicketForm from "./components/TicketForm";
 import SearchBar from "./components/SearchBar";
 import TicketList from "./components/TicketList";
@@ -7,45 +8,15 @@ import ReportDownload from "./components/ReportDownload";
 import Modal from "./components/Modal";
 import Toast from "./components/Toast";
 
+import EmployeeTasks from "./components/EmployeeTasks";
+import Schedules from "./components/Schedules";
+
+import { CONTACTS, ISSUE_TYPES } from "./data/constants";
+
 const API = import.meta.env.VITE_API_URL;
 
-const ISSUE_TYPES = [
-  "Delivery Delay",
-  "Wrong Items",
-  "Store Queries",
-  "Missing Items",
-  "Payment Issue",
-  "Return/Exchange",
-  "Refund",
-  "Cancellation",
-  "General queries",
-  "Incorrect Order",
-  "Order not found",
-  "New admissions",
-  "Other",
-];
-
-const CONTACTS = [
-  {
-    name: "Niju",
-    phone: "+91 81974 76734",
-    store: "Tippasandra Store",
-  },
-  {
-    name: "Sabina",
-    phone: "+91 72599 26705",
-    store: "Mandur Store",
-  },
-  {
-    name: "Neeraj",
-    phone: "+91 90366 51611",
-    store: "Sarajapur Store",
-  },
-];
-
 export default function App() {
-  // sidebar page selection
-  const [activePage, setActivePage] = useState("new"); // "new" | "search"
+  const [activePage, setActivePage] = useState("new"); // new | search | contacts | tasks | schedules
 
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -55,22 +26,26 @@ export default function App() {
     orderId: "",
     mobile: "",
     issueType: "",
+    schoolName: "",
+    from: "",
+    to: "",
   });
 
-  // Counts (must be INSIDE component)
-  const openCount = tickets.filter((t) => t.status === "OPEN").length;
-  const resolvedCount = tickets.filter((t) => t.status === "RESOLVED").length;
-  const totalCount = tickets.length;
+  // Counts (for Search page)
+  const counts = useMemo(() => {
+    const openCount = tickets.filter((t) => t.status === "OPEN").length;
+    const resolvedCount = tickets.filter((t) => t.status === "RESOLVED").length;
+    return { openCount, resolvedCount, totalCount: tickets.length };
+  }, [tickets]);
 
-  // Password modal state
+  // Ticket Edit password modal
   const [pwOpen, setPwOpen] = useState(false);
   const [pwValue, setPwValue] = useState("");
   const [pwError, setPwError] = useState("");
   const [pendingEdit, setPendingEdit] = useState(null); // { id, payload, onDone }
 
-  // Toast state
+  // Toast
   const [toast, setToast] = useState({ open: false, message: "", type: "success" });
-
   function showToast(message, type = "success") {
     setToast({ open: true, message, type });
   }
@@ -84,6 +59,11 @@ export default function App() {
       if (nextFilters.mobile?.trim()) params.mobile = nextFilters.mobile.trim();
       if (nextFilters.issueType?.trim()) params.issueType = nextFilters.issueType.trim();
 
+      // NEW filters
+      if (nextFilters.schoolName?.trim()) params.schoolName = nextFilters.schoolName.trim();
+      if (nextFilters.from) params.from = nextFilters.from; // YYYY-MM-DD
+      if (nextFilters.to) params.to = nextFilters.to; // YYYY-MM-DD
+
       const res = await axios.get(`${API}/api/tickets`, { params });
       setTickets(res.data.items || []);
     } catch (err) {
@@ -95,7 +75,6 @@ export default function App() {
   }
 
   useEffect(() => {
-    // load initial data so Search page is ready instantly
     fetchTickets();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -103,7 +82,7 @@ export default function App() {
   async function createTicket(payload) {
     try {
       await axios.post(`${API}/api/tickets`, payload);
-      await fetchTickets();
+      await fetchTickets(filters);
       showToast("Issue saved successfully ✅", "success");
       setActivePage("search");
       return true;
@@ -117,7 +96,7 @@ export default function App() {
   async function markResolved(id) {
     try {
       await axios.patch(`${API}/api/tickets/${id}`, { status: "RESOLVED" });
-      await fetchTickets();
+      await fetchTickets(filters);
       showToast("Ticket marked as resolved ✅", "success");
     } catch (err) {
       console.error(err);
@@ -130,7 +109,7 @@ export default function App() {
       await axios.patch(`${API}/api/tickets/${id}`, payload, {
         headers: { "x-edit-password": password },
       });
-      await fetchTickets();
+      await fetchTickets(filters);
       return true;
     } catch (err) {
       console.error(err);
@@ -158,7 +137,7 @@ export default function App() {
 
     const ok = await editTicket(current.id, current.payload, pwValue.trim());
     if (ok) {
-      current.onDone?.(); // close edit mode in TicketList
+      current.onDone?.();
       setPwOpen(false);
       setPendingEdit(null);
       setPwValue("");
@@ -173,7 +152,15 @@ export default function App() {
   }
 
   function onClear() {
-    const empty = { q: "", orderId: "", mobile: "", issueType: "" };
+    const empty = {
+      q: "",
+      orderId: "",
+      mobile: "",
+      issueType: "",
+      schoolName: "",
+      from: "",
+      to: "",
+    };
     setFilters(empty);
     fetchTickets(empty);
   }
@@ -187,7 +174,6 @@ export default function App() {
           <div className="sideBrandText">
             <div className="sideTitle">Schoolay</div>
             <div className="sideSub">Customer Query Tracker</div>
-            
           </div>
         </div>
 
@@ -209,124 +195,146 @@ export default function App() {
           </button>
 
           <button
-  className={`navItem ${activePage === "contacts" ? "active" : ""}`}
-  onClick={() => setActivePage("contacts")}
-  type="button"
->
-  📞 Contact Details
-</button>
+            className={`navItem ${activePage === "tasks" ? "active" : ""}`}
+            onClick={() => setActivePage("tasks")}
+            type="button"
+          >
+            ✅ Employee Task
+          </button>
+
+          <button
+            className={`navItem ${activePage === "schedules" ? "active" : ""}`}
+            onClick={() => setActivePage("schedules")}
+            type="button"
+          >
+            📅 Production & Schedules
+          </button>
+
+          <button
+            className={`navItem ${activePage === "contacts" ? "active" : ""}`}
+            onClick={() => setActivePage("contacts")}
+            type="button"
+          >
+            📞 Contact Details
+          </button>
         </nav>
 
         <div className="sideFooter">
-          <div className="sideHint">
-            SCHOOLAY TECHNOLOGIES
-          </div>
+          <div className="sideHint">SCHOOLAY TECHNOLOGIES</div>
         </div>
       </aside>
 
-      {/* MAIN CONTENT */}
+      {/* MAIN */}
       <main className="content">
         <header className="contentTop">
           <div>
             <h1 className="pageTitle">
-  {activePage === "new"
-    ? "Raise New Ticket"
-    : activePage === "search"
-    ? "Search Tickets"
-    : "Store Contact Details"}
-</h1>
+              {activePage === "new"
+                ? "Raise New Ticket"
+                : activePage === "search"
+                ? "Search Tickets"
+                : activePage === "tasks"
+                ? "Employee Task"
+                : activePage === "schedules"
+                ? "Production & School Schedules"
+                : "Store Contact Details"}
+            </h1>
             <p className="pageSub">
-  {activePage === "new"
-    ? "Log a customer issue so any agent can continue the case later."
-    : activePage === "search"
-    ? "Search by Order ID / Mobile / Issue Type and manage tickets."
-    : "Quick access to store contact numbers for support coordination."}
-</p>
+              {activePage === "new"
+                ? "Log a customer issue so any agent can continue the case later."
+                : activePage === "search"
+                ? "Filter by Order / Mobile / Issue / School / Date Range and manage tickets."
+                : activePage === "tasks"
+                ? "Create and track tasks for employees. Email notification will be sent instantly."
+                : activePage === "schedules"
+                ? "Manage Production schedules and School meet camps with calendar-based ordering."
+                : "Quick access to store contact numbers for support coordination."}
+            </p>
           </div>
 
           <div className="miniBadge">
             <span className="miniDot" />
-            {loading ? "Loading..." : `${tickets.length} Tickets`}
+            {activePage === "search"
+              ? loading
+                ? "Loading..."
+                : `${tickets.length} Tickets`
+              : "Online"}
           </div>
         </header>
 
-       {activePage === "new" ? (
-  <section className="card">
-    <TicketForm issueTypes={ISSUE_TYPES} onCreate={createTicket} />
-  </section>
-) : activePage === "search" ? (
-  <>
-    {/* COUNTS */}
-    <section className="statsRow">
-      <div className="statCard">
-        <div className="statLabel">Open</div>
-        <div className="statValue open">{openCount}</div>
-      </div>
+        {activePage === "new" ? (
+          <section className="card">
+            <TicketForm issueTypes={ISSUE_TYPES} onCreate={createTicket} />
+          </section>
+        ) : activePage === "search" ? (
+          <>
+            {/* COUNTS */}
+            <section className="statsRow">
+              <div className="statCard">
+                <div className="statLabel">Open</div>
+                <div className="statValue open">{counts.openCount}</div>
+              </div>
 
-      <div className="statCard">
-        <div className="statLabel">Resolved</div>
-        <div className="statValue resolved">{resolvedCount}</div>
-      </div>
+              <div className="statCard">
+                <div className="statLabel">Resolved</div>
+                <div className="statValue resolved">{counts.resolvedCount}</div>
+              </div>
 
-      <div className="statCard">
-        <div className="statLabel">Total</div>
-        <div className="statValue">{totalCount}</div>
-      </div>
-    </section>
+              <div className="statCard">
+                <div className="statLabel">Total</div>
+                <div className="statValue">{counts.totalCount}</div>
+              </div>
+            </section>
 
-    {/* SEARCH */}
-    <section className="card">
-      <h2 className="cardTitle">Search</h2>
+            <section className="card">
+              <h2 className="cardTitle">Search</h2>
 
-      <SearchBar
-        issueTypes={ISSUE_TYPES}
-        value={filters}
-        onSearch={onSearch}
-        onClear={onClear}
-      />
+              <SearchBar
+                issueTypes={ISSUE_TYPES}
+                value={filters}
+                onSearch={onSearch}
+                onClear={onClear}
+              />
 
-      <div style={{ marginTop: 12 }}>
-        <ReportDownload
-          issueTypes={ISSUE_TYPES}
-          issueType={filters.issueType}
-        />
-      </div>
-    </section>
+              <div style={{ marginTop: 12 }}>
+                <ReportDownload
+                  issueTypes={ISSUE_TYPES}
+                  issueType={filters.issueType}
+                  schoolName={filters.schoolName}
+                  from={filters.from}
+                  to={filters.to}
+                />
+              </div>
+            </section>
 
-    {/* LIST */}
-    <section className="card listCard" style={{ marginTop: 16 }}>
-      <div className="listHeader">
-        <h2 className="cardTitle">Tickets</h2>
-        <div className="meta">
-          {loading ? "Loading..." : `${tickets.length} showing`}
-        </div>
-      </div>
+            <section className="card listCard" style={{ marginTop: 16 }}>
+              <div className="listHeader">
+                <h2 className="cardTitle">Tickets</h2>
+                <div className="meta">{loading ? "Loading..." : `${tickets.length} showing`}</div>
+              </div>
 
-      <TicketList
-        tickets={tickets}
-        onResolve={markResolved}
-        onEditRequest={handleEditRequest}
-      />
-    </section>
-  </>
-) : (
-  /* CONTACT PAGE */
-  <section className="contactGrid">
-    {CONTACTS.map((c) => (
-      <div className="contactCard" key={c.phone}>
-        <div className="contactName">{c.name}</div>
+              <TicketList tickets={tickets} onResolve={markResolved} onEditRequest={handleEditRequest} />
+            </section>
+          </>
+        ) : activePage === "tasks" ? (
+          <EmployeeTasks />
+        ) : activePage === "schedules" ? (
+          <Schedules />
+        ) : (
+          <section className="contactGrid">
+            {CONTACTS.map((c) => (
+              <div className="contactCard" key={`${c.name}-${c.phone}`}>
+                <div className="contactName">{c.name}</div>
+                <div className="contactStore">{c.store}</div>
+                <a className="contactPhone" href={`tel:${c.phone.replace(/\s/g, "")}`}>
+                  {c.phone}
+                </a>
+              </div>
+            ))}
+          </section>
+        )}
 
-        <div className="contactStore">{c.store}</div>
-
-        <a className="contactPhone" href={`tel:${c.phone}`}>
-          {c.phone}
-        </a>
-      </div>
-    ))}
-  </section>
-)}
-
-        {/* Password Modal */}
+        {/* Ticket Edit Password Modal */}
         <Modal
           open={pwOpen}
           title="Enter Edit Password"
@@ -374,7 +382,6 @@ export default function App() {
           </div>
         </Modal>
 
-        {/* Toast */}
         <Toast
           open={toast.open}
           message={toast.message}

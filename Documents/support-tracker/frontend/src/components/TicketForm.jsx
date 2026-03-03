@@ -1,21 +1,5 @@
 import { useState } from "react";
-
-const SCHOOLS = [
-  "NCFE School",
-  "HMR School",
-  "HMR PU",
-  "CMR School",
-  "Soundarya Central school",
-  "Soundarya CBSE school",
-  "Amara Jyothi school",
-  "Joseph school",
-  "MNR school",
-  "Giffi school",
-  "NCS school",
-  "Pearl Public school",
-  "Fuscos school",
-  "Christ School",
-];
+import { SCHOOLS } from "../data/constants";
 
 export default function TicketForm({ issueTypes, onCreate }) {
   const [form, setForm] = useState({
@@ -65,7 +49,6 @@ export default function TicketForm({ issueTypes, onCreate }) {
 
   return (
     <form className="form" onSubmit={submit}>
-      {/* Order ID */}
       <label className="label">
         Order ID *
         <input
@@ -76,7 +59,6 @@ export default function TicketForm({ issueTypes, onCreate }) {
         />
       </label>
 
-      {/* Mobile (optional) */}
       <label className="label">
         Mobile Number (optional)
         <input
@@ -87,7 +69,6 @@ export default function TicketForm({ issueTypes, onCreate }) {
         />
       </label>
 
-      {/* SCHOOL DROPDOWN */}
       <label className="label">
         School Name *
         <select
@@ -96,7 +77,6 @@ export default function TicketForm({ issueTypes, onCreate }) {
           onChange={(e) => update("schoolName", e.target.value)}
         >
           <option value="">Select School</option>
-
           {SCHOOLS.map((school) => (
             <option key={school} value={school}>
               {school}
@@ -105,14 +85,9 @@ export default function TicketForm({ issueTypes, onCreate }) {
         </select>
       </label>
 
-      {/* Issue Type */}
       <label className="label">
         Issue Type *
-        <select
-          className="input"
-          value={form.issueType}
-          onChange={(e) => update("issueType", e.target.value)}
-        >
+        <select className="input" value={form.issueType} onChange={(e) => update("issueType", e.target.value)}>
           {issueTypes.map((type) => (
             <option key={type} value={type}>
               {type}
@@ -121,7 +96,6 @@ export default function TicketForm({ issueTypes, onCreate }) {
         </select>
       </label>
 
-      {/* Description */}
       <label className="label">
         Description
         <textarea
