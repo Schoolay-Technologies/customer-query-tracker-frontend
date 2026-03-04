@@ -701,104 +701,19 @@ body {
   }
 }
 
-/* ===== MOBILE CARD VIEWS ===== */
-.mobileCardView {
-  display: none;
-}
-
-.mobileTicketCard,
-.mobileTaskCard,
-.mobileScheduleCard {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  border: 1px solid var(--border);
-}
-
-.mobileCardHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border);
-}
-
-.mobileCardTitle {
-  font-weight: 600;
-  font-size: 16px;
-  margin-bottom: 4px;
-  color: var(--text);
-}
-
-.mobileCardSub {
-  font-size: 13px;
-  color: var(--text-light);
-}
-
-.mobileCardBody {
-  margin-bottom: 16px;
-}
-
-.mobileCardRow {
-  display: flex;
-  margin-bottom: 8px;
-  font-size: 14px;
-}
-
-.mobileCardLabel {
-  width: 90px;
-  color: var(--text-light);
-  flex-shrink: 0;
-  font-size: 13px;
-}
-
-.mobileCardValue {
-  flex: 1;
-  color: var(--text);
-}
-
-.mobileCardActions {
-  display: flex;
-  gap: 8px;
-  border-top: 1px solid var(--border);
-  padding-top: 12px;
-}
-
-.mobileCardActions .btn {
-  flex: 1;
-  min-width: 0;
-}
-
-.mobileDate {
-  font-size: 13px;
-  color: var(--primary);
-  font-weight: 500;
-  background: #eef2ff;
-  padding: 4px 8px;
-  border-radius: 20px;
-}
-
-.mobileCardActions .doneSmall {
-  flex: 1;
-  text-align: center;
-  color: var(--success);
-  font-size: 13px;
-  font-weight: 500;
-}
-
 /* ===== RESPONSIVE STYLES ===== */
 @media (max-width: 768px) {
+  /* Mobile header visible */
   .mobileHeader {
     display: flex;
   }
 
+  /* Adjust main content for mobile header */
   .content {
     padding: 80px 16px 24px;
   }
 
+  /* Sidebar becomes drawer */
   .sidebar {
     position: fixed;
     left: 0;
@@ -815,10 +730,12 @@ body {
     transform: translateX(0);
   }
 
+  /* Hide desktop brand in mobile */
   .sideBrand {
     padding: 16px;
   }
 
+  /* Adjust stats for mobile */
   .statsRow {
     gap: 8px;
   }
@@ -831,15 +748,18 @@ body {
     font-size: 24px;
   }
 
+  /* Stack form rows on mobile */
   .row2 {
     grid-template-columns: 1fr;
     gap: 16px;
   }
 
+  /* Hide page subtitle on mobile */
   .mobileHide {
     display: none;
   }
 
+  /* Adjust content top */
   .contentTop {
     flex-direction: column;
     gap: 12px;
@@ -850,10 +770,12 @@ body {
     align-self: flex-start;
   }
 
+  /* Card padding for mobile */
   .card {
     padding: 16px;
   }
 
+  /* Report button mobile */
   .mobileReportBtn .reportActions {
     flex-direction: column;
   }
@@ -862,15 +784,18 @@ body {
     width: 100%;
   }
 
+  /* Contact grid for mobile */
   .contactGrid {
     grid-template-columns: 1fr;
   }
 
+  /* Modal for mobile */
   .modalCard {
     margin: 16px;
     max-height: calc(100vh - 32px);
   }
 
+  /* Toast for mobile */
   .toast {
     left: 16px;
     right: 16px;
@@ -879,11 +804,13 @@ body {
     max-width: none;
   }
 
+  /* Table adjustments */
   .tableWrap {
     margin: 0 -16px;
     padding: 0 16px;
   }
 
+  /* Actions wrap */
   .tableActions {
     flex-direction: column;
   }
@@ -892,6 +819,7 @@ body {
     width: 100%;
   }
 
+  /* Form actions */
   .actions {
     flex-direction: column;
   }
@@ -900,6 +828,7 @@ body {
     width: 100%;
   }
 
+  /* Nav items touch-friendly */
   .navItem {
     padding: 14px 16px;
     font-size: 15px;
@@ -909,9 +838,10 @@ body {
     font-size: 20px;
   }
 
+  /* Inputs touch-friendly */
   .input {
     padding: 12px 14px;
-    font-size: 16px;
+    font-size: 16px; /* Prevents zoom on iOS */
   }
 
   .btn {
@@ -919,6 +849,7 @@ body {
     font-size: 15px;
   }
 
+  /* Password modal actions */
   .pwActions {
     flex-direction: column;
   }
@@ -926,20 +857,9 @@ body {
   .pwActions .btn {
     width: 100%;
   }
-
-  /* Hide table on mobile */
-  .ticketTable {
-    display: none;
-  }
-
-  /* Show mobile cards */
-  .mobileCardView {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
 }
 
+/* Small phones */
 @media (max-width: 480px) {
   .pageTitle {
     font-size: 20px;
@@ -968,17 +888,9 @@ body {
   .reportActions .btn {
     width: 100%;
   }
-
-  .mobileCardRow {
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .mobileCardLabel {
-    width: 100%;
-  }
 }
 
+/* Landscape orientation */
 @media (max-width: 768px) and (orientation: landscape) {
   .sidebar {
     width: 240px;
@@ -989,6 +901,7 @@ body {
   }
 }
 
+/* Print styles */
 @media print {
   .sidebar,
   .mobileHeader,
@@ -1005,5 +918,83 @@ body {
   .card {
     box-shadow: none;
     border: 1px solid #ddd;
+  }
+}
+
+/* Mobile Card View */
+.mobileCardView {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .ticketTable {
+    display: none;
+  }
+
+  .mobileCardView {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .mobileTaskCard,
+  .mobileScheduleCard {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+
+  .mobileCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mobileCardTitle {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+
+  .mobileCardSub {
+    font-size: 13px;
+    color: var(--text-light);
+  }
+
+  .mobileCardBody {
+    margin-bottom: 16px;
+  }
+
+  .mobileCardRow {
+    display: flex;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+
+  .mobileCardLabel {
+    width: 100px;
+    color: var(--text-light);
+    flex-shrink: 0;
+  }
+
+  .mobileCardValue {
+    flex: 1;
+    color: var(--text);
+  }
+
+  .mobileCardActions {
+    display: flex;
+    gap: 8px;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+
+  .mobileCardActions .btn {
+    flex: 1;
   }
 }
