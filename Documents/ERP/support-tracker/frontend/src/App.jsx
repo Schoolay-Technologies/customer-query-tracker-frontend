@@ -12,11 +12,13 @@ import EmployeeTasks from "./components/EmployeeTasks";
 import Schedules from "./components/Schedules";
 
 import { CONTACTS, ISSUE_TYPES } from "./data/constants";
+import "./App.css";
 
 const API = import.meta.env.VITE_API_URL;
 
 export default function App() {
-  const [activePage, setActivePage] = useState("new"); // new | search | contacts | tasks | schedules
+  const [activePage, setActivePage] = useState("new");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -31,20 +33,17 @@ export default function App() {
     to: "",
   });
 
-  // Counts (for Search page)
   const counts = useMemo(() => {
     const openCount = tickets.filter((t) => t.status === "OPEN").length;
     const resolvedCount = tickets.filter((t) => t.status === "RESOLVED").length;
     return { openCount, resolvedCount, totalCount: tickets.length };
   }, [tickets]);
 
-  // Ticket Edit password modal
   const [pwOpen, setPwOpen] = useState(false);
   const [pwValue, setPwValue] = useState("");
   const [pwError, setPwError] = useState("");
-  const [pendingEdit, setPendingEdit] = useState(null); // { id, payload, onDone }
+  const [pendingEdit, setPendingEdit] = useState(null);
 
-  // Toast
   const [toast, setToast] = useState({ open: false, message: "", type: "success" });
   function showToast(message, type = "success") {
     setToast({ open: true, message, type });
@@ -58,11 +57,9 @@ export default function App() {
       if (nextFilters.orderId?.trim()) params.orderId = nextFilters.orderId.trim();
       if (nextFilters.mobile?.trim()) params.mobile = nextFilters.mobile.trim();
       if (nextFilters.issueType?.trim()) params.issueType = nextFilters.issueType.trim();
-
-      // NEW filters
       if (nextFilters.schoolName?.trim()) params.schoolName = nextFilters.schoolName.trim();
-      if (nextFilters.from) params.from = nextFilters.from; // YYYY-MM-DD
-      if (nextFilters.to) params.to = nextFilters.to; // YYYY-MM-DD
+      if (nextFilters.from) params.from = nextFilters.from;
+      if (nextFilters.to) params.to = nextFilters.to;
 
       const res = await axios.get(`${API}/api/tickets`, { params });
       setTickets(res.data.items || []);
@@ -76,7 +73,6 @@ export default function App() {
 
   useEffect(() => {
     fetchTickets();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function createTicket(payload) {
@@ -167,8 +163,26 @@ export default function App() {
 
   return (
     <div className="appShell">
-      {/* SIDEBAR */}
-      <aside className="sidebar">
+      {/* Mobile Header */}
+      <div className="mobileHeader">
+        <div className="mobileHeaderLeft">
+          <img src="/assets/Schoolay.png" alt="Schoolay" className="mobileLogo" />
+          <div className="mobileBrandText">
+            <div className="mobileTitle">Schoolay</div>
+            <div className="mobileSub">Customer Query Tracker</div>
+          </div>
+        </div>
+        <button 
+          className="mobileMenuBtn"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          type="button"
+        >
+          {mobileMenuOpen ? '✕' : '☰'}
+        </button>
+      </div>
+
+      {/* Sidebar */}
+      <aside className={`sidebar ${mobileMenuOpen ? 'mobileOpen' : ''}`}>
         <div className="sideBrand">
           <img src="/assets/Schoolay.png" alt="Schoolay" className="sideLogo" />
           <div className="sideBrandText">
@@ -180,42 +194,62 @@ export default function App() {
         <nav className="sideNav">
           <button
             className={`navItem ${activePage === "new" ? "active" : ""}`}
-            onClick={() => setActivePage("new")}
+            onClick={() => {
+              setActivePage("new");
+              setMobileMenuOpen(false);
+            }}
             type="button"
           >
-            ➕ New Ticket
+            <span className="navIcon">➕</span>
+            <span className="navText">New Ticket</span>
           </button>
 
           <button
             className={`navItem ${activePage === "search" ? "active" : ""}`}
-            onClick={() => setActivePage("search")}
+            onClick={() => {
+              setActivePage("search");
+              setMobileMenuOpen(false);
+            }}
             type="button"
           >
-            🔍 Search Tickets
+            <span className="navIcon">🔍</span>
+            <span className="navText">Search Tickets</span>
           </button>
 
           <button
             className={`navItem ${activePage === "tasks" ? "active" : ""}`}
-            onClick={() => setActivePage("tasks")}
+            onClick={() => {
+              setActivePage("tasks");
+              setMobileMenuOpen(false);
+            }}
             type="button"
           >
-            ✅ Employee Task
+            <span className="navIcon">✅</span>
+            <span className="navText">Employee Task</span>
           </button>
 
           <button
             className={`navItem ${activePage === "schedules" ? "active" : ""}`}
-            onClick={() => setActivePage("schedules")}
+            onClick={() => {
+              setActivePage("schedules");
+              setMobileMenuOpen(false);
+            }}
             type="button"
           >
-            📅 Production & Schedules
+            <span className="navIcon">📅</span>
+            <span className="navText">Production & Schedules</span>
           </button>
 
           <button
             className={`navItem ${activePage === "contacts" ? "active" : ""}`}
-            onClick={() => setActivePage("contacts")}
+            onClick={() => {
+              setActivePage("contacts");
+              setMobileMenuOpen(false);
+            }}
             type="button"
           >
-            📞 Contact Details
+            <span className="navIcon">📞</span>
+            <span className="navText">Contact Details</span>
           </button>
         </nav>
 
@@ -224,8 +258,8 @@ export default function App() {
         </div>
       </aside>
 
-      {/* MAIN */}
-      <main className="content">
+      {/* Main Content */}
+      <main className="content" onClick={() => mobileMenuOpen && setMobileMenuOpen(false)}>
         <header className="contentTop">
           <div>
             <h1 className="pageTitle">
@@ -239,7 +273,7 @@ export default function App() {
                 ? "Production & School Schedules"
                 : "Store Contact Details"}
             </h1>
-            <p className="pageSub">
+            <p className="pageSub mobileHide">
               {activePage === "new"
                 ? "Log a customer issue so any agent can continue the case later."
                 : activePage === "search"
@@ -268,18 +302,15 @@ export default function App() {
           </section>
         ) : activePage === "search" ? (
           <>
-            {/* COUNTS */}
-            <section className="statsRow">
+            <section className="statsRow mobileStats">
               <div className="statCard">
                 <div className="statLabel">Open</div>
                 <div className="statValue open">{counts.openCount}</div>
               </div>
-
               <div className="statCard">
                 <div className="statLabel">Resolved</div>
                 <div className="statValue resolved">{counts.resolvedCount}</div>
               </div>
-
               <div className="statCard">
                 <div className="statLabel">Total</div>
                 <div className="statValue">{counts.totalCount}</div>
@@ -288,15 +319,13 @@ export default function App() {
 
             <section className="card">
               <h2 className="cardTitle">Search</h2>
-
               <SearchBar
                 issueTypes={ISSUE_TYPES}
                 value={filters}
                 onSearch={onSearch}
                 onClear={onClear}
               />
-
-              <div style={{ marginTop: 12 }}>
+              <div className="mobileReportBtn">
                 <ReportDownload
                   issueTypes={ISSUE_TYPES}
                   issueType={filters.issueType}
@@ -307,13 +336,16 @@ export default function App() {
               </div>
             </section>
 
-            <section className="card listCard" style={{ marginTop: 16 }}>
+            <section className="card listCard">
               <div className="listHeader">
                 <h2 className="cardTitle">Tickets</h2>
                 <div className="meta">{loading ? "Loading..." : `${tickets.length} showing`}</div>
               </div>
-
-              <TicketList tickets={tickets} onResolve={markResolved} onEditRequest={handleEditRequest} />
+              <TicketList 
+                tickets={tickets} 
+                onResolve={markResolved} 
+                onEditRequest={handleEditRequest} 
+              />
             </section>
           </>
         ) : activePage === "tasks" ? (
@@ -334,7 +366,7 @@ export default function App() {
           </section>
         )}
 
-        {/* Ticket Edit Password Modal */}
+        {/* Password Modal */}
         <Modal
           open={pwOpen}
           title="Enter Edit Password"
@@ -347,37 +379,19 @@ export default function App() {
         >
           <div className="pwWrap">
             <div className="pwText">Password is required to edit a ticket.</div>
-
             <input
               className="input"
               type="password"
               placeholder="Enter password"
               value={pwValue}
               onChange={(e) => setPwValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") submitPassword();
-              }}
+              onKeyDown={(e) => { if (e.key === "Enter") submitPassword(); }}
               autoFocus
             />
-
             {pwError ? <div className="pwError">{pwError}</div> : null}
-
             <div className="pwActions">
-              <button
-                className="btn secondary"
-                type="button"
-                onClick={() => {
-                  setPwOpen(false);
-                  setPwError("");
-                  setPendingEdit(null);
-                  setPwValue("");
-                }}
-              >
-                Cancel
-              </button>
-              <button className="btn" type="button" onClick={submitPassword}>
-                Confirm
-              </button>
+              <button className="btn secondary" type="button" onClick={() => setPwOpen(false)}>Cancel</button>
+              <button className="btn" type="button" onClick={submitPassword}>Confirm</button>
             </div>
           </div>
         </Modal>
