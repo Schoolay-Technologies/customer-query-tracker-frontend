@@ -45,7 +45,7 @@ export const SCHOOLS = [
 export const CONTACTS = [
   { name: "Niju", phone: "+91 81974 76734", store: "Tippasandra Store" },
   // UPDATED number
-  { name: "Sabina", phone: "+91 88467 28333", store: "Mandur Store" },
+  { name: "Sabina", phone: "+91 88846 72833", store: "Mandur Store" },
   { name: "Neeraj", phone: "+91 90366 51611", store: "Sarajapur Store" },
 ];
 
