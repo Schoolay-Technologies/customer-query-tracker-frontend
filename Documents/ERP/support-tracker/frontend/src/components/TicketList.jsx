@@ -14,6 +14,7 @@ const ISSUE_TYPES = [
   "Incorrect Order",
   "Order not found",
   "New admissions",
+  "Online Order Guidance",
   "Other",
 ];
 
