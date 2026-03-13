@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { SCHOOLS } from "../data/constants";
 
 const ISSUE_TYPES = [
   "Delivery Delay",
@@ -110,11 +111,18 @@ export default function TicketList({ tickets, onResolve, onEditRequest }) {
                   </td>
 
                   <td>
-                    <input
+                    <select
                       className="input tableInput"
                       value={editForm.schoolName}
                       onChange={(e) => setEditForm({ ...editForm, schoolName: e.target.value })}
-                    />
+                    >
+                      <option value="">Select School</option>
+                      {SCHOOLS.map((school) => (
+                        <option key={school} value={school}>
+                          {school}
+                        </option>
+                      ))}
+                    </select>
                   </td>
 
                   <td>
